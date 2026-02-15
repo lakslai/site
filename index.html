@@ -8,64 +8,65 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
         :root { --red: #e21b3c; --blue: #1368ce; --yellow: #d89e00; --green: #26890c; --dark: #46178f; }
-        body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: white; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 95%; max-width: 800px; text-align: center; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: white; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 500px; text-align: center; }
         
-        /* Кнопки как в Кахуте */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .answer-btn { border: none; height: 120px; border-radius: 8px; font-size: 22px; font-weight: bold; color: white; cursor: pointer; transition: transform 0.2s, brightness 0.2s; position: relative; display: flex; align-items: center; justify-content: center; padding: 10px; }
-        .answer-btn:active { transform: scale(0.95); }
-        .btn-0 { background: var(--red); }    .btn-1 { background: var(--blue); }
+        /* Кнопки ответов - адаптивные */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .answer-btn { border: none; height: 80px; border-radius: 12px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; padding: 10px; display: flex; align-items: center; justify-content: center; }
+        .btn-0 { background: var(--red); } .btn-1 { background: var(--blue); }
         .btn-2 { background: var(--yellow); } .btn-3 { background: var(--green); }
         
-        /* ИИ и Таймер */
-        #ai-box { background: rgba(0,0,0,0.3); border: 2px solid #00f2ff; padding: 20px; border-radius: 15px; margin: 20px 0; font-family: 'Courier New', monospace; font-size: 18px; text-align: left; min-height: 80px; box-shadow: 0 0 15px #00f2ff55; }
-        #timer-circle { font-size: 50px; font-weight: 900; background: white; color: var(--dark); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 4px solid #00f2ff; }
+        /* ИИ блок - теперь текст не вылетает */
+        #ai-box { background: rgba(0,0,0,0.4); border: 2px solid #00f2ff; padding: 15px; border-radius: 15px; margin: 15px 0; font-family: monospace; font-size: 14px; text-align: left; min-height: 60px; word-wrap: break-word; overflow-wrap: break-word; }
+        
+        #timer-circle { font-size: 30px; font-weight: 900; background: white; color: var(--dark); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 10px auto; }
         
         .hidden { display: none !important; }
-        input, select { padding: 15px; width: 80%; border-radius: 10px; border: none; margin: 10px; font-size: 18px; }
-        .admin-panel { background: #00000055; padding: 20px; margin-top: 50px; border-radius: 20px; border: 1px dashed white; }
+        input, select { padding: 12px; width: 90%; border-radius: 10px; border: none; margin: 8px; font-size: 16px; }
+
+        /* Секретная админка */
+        .admin-panel { background: #111; padding: 15px; margin-top: 20px; border-radius: 15px; border: 1px solid red; text-align: left; width: 100%; box-sizing: border-box; }
+        .admin-btn { background: #333; color: white; border: 1px solid white; padding: 5px 10px; margin: 2px; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <h1 id="main-title" onclick="secretClick()" style="cursor:pointer; user-select:none;">AI QUIZ 🤖</h1>
+
     <div id="login-screen">
-        <h1 style="font-size: 40px; text-shadow: 2px 2px #000;">AI QUIZ 🤖</h1>
-        <input type="text" id="username" placeholder="ТВОЕ ИМЯ...">
+        <input type="text" id="username" placeholder="Твое имя...">
         <select id="userteam">
-            <option value="Команда 1">Команда 1</option>
-            <option value="Команда 2">Команда 2</option>
-            <option value="Команда 3">Команда 3</option>
-            <option value="Команда 4">Команда 4</option>
+            <option>Команда 1</option><option>Команда 2</option>
+            <option>Команда 3</option><option>Команда 4</option>
         </select>
-        <button class="answer-btn btn-1" style="width: 100%; height: 60px;" onclick="join()">ПОЕХАЛИ!</button>
+        <button class="answer-btn btn-1" style="width: 100%; height: 50px;" onclick="join()">ВОЙТИ</button>
     </div>
 
     <div id="game-screen" class="hidden">
         <div id="timer-circle">60</div>
-        <h1 id="question-text">Ожидание учителя...</h1>
-        <div id="ai-box">ИИ: Готов к работе...</div>
-        
+        <h3 id="question-text">Ждем учителя...</h3>
+        <div id="ai-box">ИИ: Инициализация...</div>
         <div id="answers-grid" class="grid">
             <button class="answer-btn btn-0" id="opt-0" onclick="sendAnswer(0)"></button>
             <button class="answer-btn btn-1" id="opt-1" onclick="sendAnswer(1)"></button>
             <button class="answer-btn btn-2" id="opt-2" onclick="sendAnswer(2)"></button>
             <button class="answer-btn btn-3" id="opt-3" onclick="sendAnswer(3)"></button>
         </div>
-        <h2 id="feedback" class="hidden">ОТВЕТ ПРИНЯТ! ЖДИ...</h2>
+        <h2 id="feedback" class="hidden">ОТВЕТ ПРИНЯТ!</h2>
     </div>
 
-    <div id="admin-area" class="admin-panel">
-        <h3>УПРАВЛЕНИЕ (Для тебя)</h3>
-        <button onclick="pushQuestion(1)">ВОПРОС 1</button>
-        <button onclick="pushQuestion(2)">ВОПРОС 2</button>
-        <div id="admin-log" style="font-size: 12px; margin-top: 10px;"></div>
+    <div id="admin-area" class="admin-panel hidden">
+        <h4>Управление (Секретно)</h4>
+        <div id="q-buttons"></div>
+        <hr>
+        <div id="admin-log" style="font-size: 11px; height: 150px; overflow-y: auto; background: #000; padding: 5px;"></div>
     </div>
 </div>
 
 <script>
-// === ТВОЙ КОНФИГ ИЗ FIREBASE ===
+// === КОНФИГ FIREBASE (Вставь свой!) ===
 const firebaseConfig = {
   apiKey: "AIzaSyC9QIPxowR7HdMFCxi0bRJ_Z20lXQXr5K0",
   authDomain: "ai-school-quiz.firebaseapp.com",
@@ -76,19 +77,28 @@ const firebaseConfig = {
   appId: "1:155195208675:web:21799fc642e88ddce826d6",
   measurementId: "G-Y4N2NGVNS9"
 };
-// ==============================
+// =====================================
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const questions = {
-    1: { q: "Что такое ChatGPT?", opts: ["Нейросеть", "Робот-пылесос", "Вирус", "Игра"], ai: "Анализирую... ChatGPT основан на архитектуре Transformer. Это языковая модель. Правильный ответ: Нейросеть." },
-    2: { q: "Для чего нужен ИИ в школе?", opts: ["Списывать", "Помогать учить", "Ни для чего", "Заменить обеды"], ai: "Поиск данных... ИИ может персонализировать обучение и проверять тесты быстрее человека." }
-};
+// ТУТ ТВОИ ВОПРОСЫ. 
+// correct: это индекс правильного ответа (0, 1, 2 или 3)
+const questions = [
+    { q: "Что такое нейросеть?", opts: ["Программа", "Живой мозг", "Вирус", "Чип"], correct: 0, ai: "Нейросеть — это алгоритм, имитирующий работу человеческого мозга. Она обучается на огромных массивах данных." },
+    { q: "Кто создал ChatGPT?", opts: ["Google", "Apple", "OpenAI", "Microsoft"], correct: 2, ai: "ChatGPT разработан компанией OpenAI. Модель использует архитектуру GPT (Generative Pre-trained Transformer)." },
+    { q: "Может ли ИИ иметь чувства?", opts: ["Да", "Нет", "Иногда", "В будущем"], correct: 1, ai: "На данный момент ИИ лишь имитирует эмоции, основываясь на статистике текста. Реального сознания у него нет." },
+    { q: "Главный риск развития ИИ?", opts: ["Война", "Безработица", "Скука", "Поломка интернета"], correct: 1, ai: "Многие эксперты считают, что автоматизация может привести к исчезновению ряда профессий." }
+];
+
+let clickCount = 0;
+function secretClick() {
+    clickCount++;
+    if(clickCount >= 5) document.getElementById('admin-area').classList.toggle('hidden');
+}
 
 function join() {
-    let name = document.getElementById('username').value;
-    if(!name) return alert("Имя введи!");
+    if(!document.getElementById('username').value) return alert("Имя!");
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
 }
@@ -101,40 +111,55 @@ function sendAnswer(idx) {
     document.getElementById('feedback').classList.remove('hidden');
 }
 
-function pushQuestion(id) {
-    db.ref('answers').remove();
-    db.ref('currentTask').set({ id: id, ...questions[id], startTime: Date.now() });
-}
+// Рендерим кнопки вопросов в админке
+const qDiv = document.getElementById('q-buttons');
+questions.forEach((item, index) => {
+    let btn = document.createElement('button');
+    btn.className = "admin-btn";
+    btn.innerText = "Вопрос " + (index + 1);
+    btn.onclick = () => {
+        db.ref('answers').remove();
+        db.ref('currentTask').set({ ...item, startTime: Date.now() });
+    };
+    qDiv.appendChild(btn);
+});
 
 db.ref('currentTask').on('value', snap => {
     const data = snap.val();
     if(data) {
         document.getElementById('question-text').innerText = data.q;
-        data.opts.forEach((text, i) => {
-            document.getElementById('opt-' + i).innerText = text;
-        });
+        data.opts.forEach((text, i) => { document.getElementById('opt-'+i).innerText = text; });
         document.getElementById('answers-grid').classList.remove('hidden');
         document.getElementById('feedback').classList.add('hidden');
-        startTimer(60);
         typeAI(data.ai);
+        startTimer(60);
     }
 });
 
 function typeAI(text) {
-    let i = 0; let box = document.getElementById('ai-box'); box.innerText = "";
-    let int = setInterval(() => { box.innerText += text[i]; i++; if(i >= text.length) clearInterval(int); }, 40);
+    let i = 0; let box = document.getElementById('ai-box'); box.innerText = "ИИ: ";
+    let int = setInterval(() => { box.innerText += text[i]; i++; if(i >= text.length) clearInterval(int); }, 30);
 }
 
 function startTimer(s) {
     let t = s; let el = document.getElementById('timer-circle');
-    let int = setInterval(() => { t--; el.innerText = t; if(t <= 0) clearInterval(int); }, 1000);
+    if(window.timerInt) clearInterval(window.timerInt);
+    window.timerInt = setInterval(() => { t--; el.innerText = t; if(t <= 0) clearInterval(window.timerInt); }, 1000);
 }
 
-// Лог ответов для тебя
+// Лог для учителя: КТО ПРАВ
 db.ref('answers').on('value', snap => {
     let log = document.getElementById('admin-log'); log.innerHTML = "";
-    if(snap.val()) Object.keys(snap.val()).forEach(u => {
-        log.innerHTML += `[${u} - ${snap.val()[u].team} ответил] `;
+    let currentQ = null;
+    db.ref('currentTask').once('value', qSnap => {
+        currentQ = qSnap.val();
+        if(snap.val() && currentQ) {
+            Object.keys(snap.val()).forEach(u => {
+                let ans = snap.val()[u];
+                let isCorrect = ans.answer === currentQ.correct ? "✅ ВЕРНО" : "❌ НЕТ";
+                log.innerHTML += `<div>${isCorrect} | ${u} (${ans.team})</div>`;
+            });
+        }
     });
 });
 </script>
