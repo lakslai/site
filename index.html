@@ -3,70 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Battle Quiz</title>
+    <title>AI QUIZ PRO</title>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
-        :root { --red: #e21b3c; --blue: #1368ce; --yellow: #d89e00; --green: #26890c; --dark: #46178f; }
+        :root { --red: #e21b3c; --blue: #1368ce; --yellow: #d89e00; --green: #26890c; --dark: #46178f; --cyan: #00f2ff; }
         body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: white; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 500px; text-align: center; }
+        .container { width: 100%; max-width: 600px; text-align: center; }
         
-        /* Кнопки ответов - адаптивные */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .answer-btn { border: none; height: 80px; border-radius: 12px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; padding: 10px; display: flex; align-items: center; justify-content: center; }
+        /* Блок ИИ - теперь большой и красивый */
+        #ai-box { 
+            background: rgba(0,0,0,0.7); border: 3px solid var(--cyan); padding: 25px; border-radius: 20px; 
+            margin: 15px 0; font-family: 'Courier New', monospace; font-size: 18px; line-height: 1.6;
+            text-align: left; min-height: 150px; box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
+        }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .answer-btn { border: none; height: 100px; border-radius: 20px; font-size: 20px; font-weight: 900; color: white; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
         .btn-0 { background: var(--red); } .btn-1 { background: var(--blue); }
         .btn-2 { background: var(--yellow); } .btn-3 { background: var(--green); }
         
-        /* ИИ блок - теперь текст не вылетает */
-        #ai-box { background: rgba(0,0,0,0.4); border: 2px solid #00f2ff; padding: 15px; border-radius: 15px; margin: 15px 0; font-family: monospace; font-size: 14px; text-align: left; min-height: 60px; word-wrap: break-word; overflow-wrap: break-word; }
+        /* Счет команды в углу */
+        #team-badge { background: var(--cyan); color: var(--dark); padding: 10px 20px; border-radius: 50px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
         
-        #timer-circle { font-size: 30px; font-weight: 900; background: white; color: var(--dark); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 10px auto; }
+        #timer-circle { font-size: 35px; font-weight: 900; background: white; color: var(--dark); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 10px auto; border: 5px solid var(--cyan); }
         
         .hidden { display: none !important; }
-        input, select { padding: 12px; width: 90%; border-radius: 10px; border: none; margin: 8px; font-size: 16px; }
-
-        /* Секретная админка */
-        .admin-panel { background: #111; padding: 15px; margin-top: 20px; border-radius: 15px; border: 1px solid red; text-align: left; width: 100%; box-sizing: border-box; }
-        .admin-btn { background: #333; color: white; border: 1px solid white; padding: 5px 10px; margin: 2px; cursor: pointer; font-size: 12px; }
+        input, select { padding: 15px; width: 90%; border-radius: 12px; border: none; margin: 10px; font-size: 18px; }
+        .leaderboard { background: white; color: black; border-radius: 20px; padding: 20px; }
+        .score-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 2px solid #eee; font-size: 22px; font-weight: bold; }
+        
+        .admin-panel { background: #000; padding: 15px; border: 2px solid red; margin-top: 20px; border-radius: 20px; text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 id="main-title" onclick="secretClick()" style="cursor:pointer; user-select:none;">AI QUIZ 🤖</h1>
+    <h1 id="main-title" onclick="secretClick()" style="cursor:pointer; text-shadow: 3px 3px 0px rgba(0,0,0,0.5);">AI BATTLE 🤖</h1>
 
     <div id="login-screen">
-        <input type="text" id="username" placeholder="Твое имя...">
+        <input type="text" id="username" placeholder="Твое Имя...">
         <select id="userteam">
             <option>Команда 1</option><option>Команда 2</option>
             <option>Команда 3</option><option>Команда 4</option>
         </select>
-        <button class="answer-btn btn-1" style="width: 100%; height: 50px;" onclick="join()">ВОЙТИ</button>
+        <button class="answer-btn btn-1" style="width: 100%; height: 60px;" onclick="join()">ВСТУПИТЬ В БОЙ</button>
+    </div>
+
+    <div id="wait-screen" class="hidden">
+        <div id="team-badge">Твоя команда: <span id="my-team-name">?</span> | Баллы: <span id="my-team-score">0</span></div>
+        <h2 id="wait-text">Ожидание команды учителя...</h2>
     </div>
 
     <div id="game-screen" class="hidden">
         <div id="timer-circle">60</div>
-        <h3 id="question-text">Ждем учителя...</h3>
-        <div id="ai-box">ИИ: Инициализация...</div>
+        <h2 id="question-text">Вопрос...</h2>
+        <div id="ai-box"></div>
         <div id="answers-grid" class="grid">
             <button class="answer-btn btn-0" id="opt-0" onclick="sendAnswer(0)"></button>
             <button class="answer-btn btn-1" id="opt-1" onclick="sendAnswer(1)"></button>
             <button class="answer-btn btn-2" id="opt-2" onclick="sendAnswer(2)"></button>
             <button class="answer-btn btn-3" id="opt-3" onclick="sendAnswer(3)"></button>
         </div>
-        <h2 id="feedback" class="hidden">ОТВЕТ ПРИНЯТ!</h2>
+    </div>
+
+    <div id="finish-screen" class="hidden">
+        <h1>ИТОГИ УРОКА 🏆</h1>
+        <div id="leaderboard-data" class="leaderboard"></div>
+        <button class="answer-btn btn-1" style="width:100%; margin-top:20px;" onclick="location.reload()">НА ГЛАВНУЮ</button>
     </div>
 
     <div id="admin-area" class="admin-panel hidden">
-        <h4>Управление (Секретно)</h4>
+        <h4>Пульт Управления</h4>
         <div id="q-buttons"></div>
-        <hr>
-        <div id="admin-log" style="font-size: 11px; height: 150px; overflow-y: auto; background: #000; padding: 5px;"></div>
+        <button onclick="showFinal()" style="background: gold; padding: 10px; margin: 5px;">🏆 ФИНАЛ</button>
+        <button onclick="resetGame()" style="background: red; color: white; padding: 10px;">🧨 ПОЛНЫЙ СБРОС</button>
+        <div id="admin-log" style="font-size: 11px; margin-top:10px; background: #111; padding: 5px;"></div>
     </div>
 </div>
 
 <script>
-// === КОНФИГ FIREBASE (Вставь свой!) ===
+// === ТВОЙ CONFIG FIREBASE ===
 const firebaseConfig = {
   apiKey: "AIzaSyC9QIPxowR7HdMFCxi0bRJ_Z20lXQXr5K0",
   authDomain: "ai-school-quiz.firebaseapp.com",
@@ -77,91 +94,138 @@ const firebaseConfig = {
   appId: "1:155195208675:web:21799fc642e88ddce826d6",
   measurementId: "G-Y4N2NGVNS9"
 };
-// =====================================
+// ============================
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ТУТ ТВОИ ВОПРОСЫ. 
-// correct: это индекс правильного ответа (0, 1, 2 или 3)
 const questions = [
-    { q: "Что такое нейросеть?", opts: ["Программа", "Живой мозг", "Вирус", "Чип"], correct: 0, ai: "Нейросеть — это алгоритм, имитирующий работу человеческого мозга. Она обучается на огромных массивах данных." },
-    { q: "Кто создал ChatGPT?", opts: ["Google", "Apple", "OpenAI", "Microsoft"], correct: 2, ai: "ChatGPT разработан компанией OpenAI. Модель использует архитектуру GPT (Generative Pre-trained Transformer)." },
-    { q: "Может ли ИИ иметь чувства?", opts: ["Да", "Нет", "Иногда", "В будущем"], correct: 1, ai: "На данный момент ИИ лишь имитирует эмоции, основываясь на статистике текста. Реального сознания у него нет." },
-    { q: "Главный риск развития ИИ?", opts: ["Война", "Безработица", "Скука", "Поломка интернета"], correct: 1, ai: "Многие эксперты считают, что автоматизация может привести к исчезновению ряда профессий." }
+    { q: "Что такое нейросеть?", opts: ["Программа", "Живой мозг", "Вирус", "Чип"], correct: 0, ai: "Представьте, что нейросеть — это очень прилежный ученик. Он просматривает миллионы картинок с котами, пока не поймет, что у кота есть уши и хвост. Это математика, которая учится на своих ошибках, а не просто код." },
+    { q: "Кто такой Илон Маск в мире ИИ?", opts: ["Создатель", "Инвестор", "Хакер", "Противник"], correct: 1, ai: "Илон Маск был одним из основателей OpenAI, но позже покинул компанию. Сейчас он развивает свой ИИ под названием Grok, считая, что ИИ должен быть максимально правдивым." },
+    { q: "Может ли ИИ написать код за тебя?", opts: ["Нет", "Только ошибки", "Да, легко", "В 2090 году"], correct: 2, ai: "Уже сегодня ИИ (как я!) пишет тысячи строк кода ежесекундно. Он помогает программистам работать быстрее, но человеку всё равно нужно проверять логику, чтобы ничего не сломалось." }
 ];
 
+let myID = "";
+let myTeam = "";
 let clickCount = 0;
+
 function secretClick() {
-    clickCount++;
-    if(clickCount >= 5) document.getElementById('admin-area').classList.toggle('hidden');
+    clickCount++; if(clickCount >= 5) document.getElementById('admin-area').classList.toggle('hidden');
 }
 
 function join() {
-    if(!document.getElementById('username').value) return alert("Имя!");
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
-}
-
-function sendAnswer(idx) {
     let name = document.getElementById('username').value;
-    let team = document.getElementById('userteam').value;
-    db.ref('answers/' + name).set({ team: team, answer: idx, time: Date.now() });
-    document.getElementById('answers-grid').classList.add('hidden');
-    document.getElementById('feedback').classList.remove('hidden');
+    myTeam = document.getElementById('userteam').value;
+    if(!name) return alert("Имя!");
+    myID = name + "_" + Math.floor(Math.random()*100);
+    document.getElementById('my-team-name').innerText = myTeam;
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('wait-screen').classList.remove('hidden');
 }
 
-// Рендерим кнопки вопросов в админке
+// ЛОГИКА БАЛЛОВ (10, 5, 1, 0)
+async function sendAnswer(idx) {
+    document.getElementById('game-screen').classList.add('hidden');
+    document.getElementById('wait-screen').classList.remove('hidden');
+    document.getElementById('wait-text').innerText = "Ответ принят! Ждем ИИ...";
+
+    const taskSnap = await db.ref('currentTask').once('value');
+    const correctIdx = taskSnap.val().correct;
+
+    // Проверяем, ответила ли уже твоя команда в этом раунде
+    const roundAnswers = await db.ref('roundAnswers').once('value');
+    const hasTeamAnswered = Object.values(roundAnswers.val() || {}).some(a => a.team === myTeam);
+
+    if (!hasTeamAnswered) {
+        // Если твоя команда первая из всех ответивших
+        let currentOrder = Object.keys(roundAnswers.val() || {}).length; // Какой по счету ответ в мире
+        let points = 0;
+        
+        if (idx === correctIdx) {
+            if (currentOrder === 0) points = 10;
+            else if (currentOrder === 1) points = 5;
+            else if (currentOrder === 2) points = 1;
+        }
+
+        // Записываем ответ в раунд (чтобы заблокировать команду)
+        db.ref('roundAnswers').push({ team: myTeam, correct: (idx === correctIdx) });
+
+        // Добавляем баллы в общую копилку команды
+        if (points > 0) {
+            const teamRef = db.ref('teamScores/' + myTeam);
+            teamRef.transaction(current => (current || 0) + points);
+        }
+    }
+}
+
+// УПРАВЛЕНИЕ ДЛЯ ТЕБЯ
 const qDiv = document.getElementById('q-buttons');
-questions.forEach((item, index) => {
+questions.forEach((q, i) => {
     let btn = document.createElement('button');
-    btn.className = "admin-btn";
-    btn.innerText = "Вопрос " + (index + 1);
+    btn.innerText = "Вопрос " + (i+1);
     btn.onclick = () => {
-        db.ref('answers').remove();
-        db.ref('currentTask').set({ ...item, startTime: Date.now() });
+        db.ref('roundAnswers').remove();
+        db.ref('gameState').set({ status: "play", qId: i, startTime: Date.now() });
+        db.ref('currentTask').set(q);
     };
     qDiv.appendChild(btn);
 });
 
-db.ref('currentTask').on('value', snap => {
-    const data = snap.val();
-    if(data) {
-        document.getElementById('question-text').innerText = data.q;
-        data.opts.forEach((text, i) => { document.getElementById('opt-'+i).innerText = text; });
-        document.getElementById('answers-grid').classList.remove('hidden');
-        document.getElementById('feedback').classList.add('hidden');
-        typeAI(data.ai);
-        startTimer(60);
+function showFinal() { db.ref('gameState').set({ status: "finish" }); }
+function resetGame() { db.ref().remove(); location.reload(); }
+
+// СЛУШАЕМ БАЗУ
+db.ref('gameState').on('value', snap => {
+    const s = snap.val(); if(!s) return;
+    if(s.status === "play") {
+        const q = questions[s.qId];
+        document.getElementById('wait-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('question-text').innerText = q.q;
+        q.opts.forEach((t, i) => document.getElementById('opt-'+i).innerText = t);
+        typeAI(q.ai); startTimer(60);
+    } else if(s.status === "finish") {
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('wait-screen').classList.add('hidden');
+        document.getElementById('finish-screen').classList.remove('hidden');
+        updateLeaderboard();
     }
 });
 
+// Обновление баллов на экране ученика
+db.ref('teamScores').on('value', snap => {
+    const scores = snap.val() || {};
+    if(myTeam && scores[myTeam]) document.getElementById('my-team-score').innerText = scores[myTeam];
+});
+
 function typeAI(text) {
-    let i = 0; let box = document.getElementById('ai-box'); box.innerText = "ИИ: ";
-    let int = setInterval(() => { box.innerText += text[i]; i++; if(i >= text.length) clearInterval(int); }, 30);
+    let i = 0; let box = document.getElementById('ai-box'); box.innerText = "🤖 ";
+    if(window.aiInt) clearInterval(window.aiInt);
+    window.aiInt = setInterval(() => {
+        box.innerText += text[i]; i++;
+        if(i >= text.length) clearInterval(window.aiInt);
+    }, 100); // ОЧЕНЬ медленно и красиво
 }
 
 function startTimer(s) {
     let t = s; let el = document.getElementById('timer-circle');
     if(window.timerInt) clearInterval(window.timerInt);
-    window.timerInt = setInterval(() => { t--; el.innerText = t; if(t <= 0) clearInterval(window.timerInt); }, 1000);
+    window.timerInt = setInterval(() => {
+        t--; el.innerText = t;
+        if(t <= 0) { clearInterval(window.timerInt); document.getElementById('game-screen').classList.add('hidden'); }
+    }, 1000);
 }
 
-// Лог для учителя: КТО ПРАВ
-db.ref('answers').on('value', snap => {
-    let log = document.getElementById('admin-log'); log.innerHTML = "";
-    let currentQ = null;
-    db.ref('currentTask').once('value', qSnap => {
-        currentQ = qSnap.val();
-        if(snap.val() && currentQ) {
-            Object.keys(snap.val()).forEach(u => {
-                let ans = snap.val()[u];
-                let isCorrect = ans.answer === currentQ.correct ? "✅ ВЕРНО" : "❌ НЕТ";
-                log.innerHTML += `<div>${isCorrect} | ${u} (${ans.team})</div>`;
-            });
-        }
+function updateLeaderboard() {
+    db.ref('teamScores').once('value', snap => {
+        const s = snap.val() || {};
+        const board = document.getElementById('leaderboard-data');
+        board.innerHTML = "";
+        ["Команда 1", "Команда 2", "Команда 3", "Команда 4"].forEach(t => {
+            board.innerHTML += `<div class="score-row"><span>${t}</span><span>${s[t] || 0}</span></div>`;
+        });
     });
-});
+}
 </script>
 </body>
 </html>
