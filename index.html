@@ -3,49 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math test from Lakslai</title>
+    <title>ENT Math Battle</title>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
         :root { --red: #e21b3c; --blue: #1368ce; --yellow: #d89e00; --green: #26890c; --dark: #46178f; --cyan: #00f2ff; }
         body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: white; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         .container { width: 100%; max-width: 600px; text-align: center; box-sizing: border-box; }
-        #ai-box { background: rgba(0,0,0,0.7); border: 3px solid var(--cyan); padding: 15px; border-radius: 20px; margin: 15px 0; font-family: monospace; font-size: 17px; line-height: 1.6; text-align: left; min-height: 130px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; word-spacing: 2px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .answer-btn { border: none; height: 85px; border-radius: 15px; font-size: 16px; font-weight: 900; color: white; cursor: pointer; }
+        #ai-box { background: rgba(0,0,0,0.7); border: 3px solid var(--cyan); padding: 20px; border-radius: 20px; margin: 15px 0; font-family: monospace; font-size: 17px; line-height: 1.6; text-align: left; min-height: 140px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; word-spacing: 2px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .answer-btn { border: none; height: 90px; border-radius: 18px; font-size: 18px; font-weight: 900; color: white; cursor: pointer; }
         .btn-0 { background: var(--red); } .btn-1 { background: var(--blue); }
         .btn-2 { background: var(--yellow); } .btn-3 { background: var(--green); }
         #team-badge { background: var(--cyan); color: var(--dark); padding: 8px 15px; border-radius: 50px; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
         #timer-circle { font-size: 30px; font-weight: 900; background: white; color: var(--dark); width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 10px auto; border: 4px solid var(--cyan); }
         .hidden { display: none !important; }
         input, select { padding: 12px; width: 90%; border-radius: 10px; border: none; margin: 8px; font-size: 16px; }
-        .leaderboard { background: white; color: black; border-radius: 20px; padding: 15px; }
-        .score-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 2px solid #eee; font-size: 19px; font-weight: bold; }
+        .leaderboard { background: white; color: black; border-radius: 20px; padding: 20px; text-align: left; }
+        .score-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 2px solid #eee; font-size: 20px; font-weight: bold; }
         .admin-panel { background: #000; padding: 20px; border: 3px solid red; margin-top: 10px; border-radius: 20px; text-align: left; width: 100%; box-sizing: border-box; }
-        .admin-btn { background: #222; color: white; border: 1px solid #444; padding: 12px; margin: 5px; cursor: pointer; border-radius: 8px; width: 45%; }
+        .admin-btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .admin-btn { background: #222; color: white; border: 1px solid #444; padding: 12px; cursor: pointer; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 id="main-title" onclick="secretClick()" style="cursor:pointer; user-select:none;">AI QUIZ 🤖</h1>
+    <h1 id="main-title" onclick="secretClick()" style="cursor:pointer; user-select:none;">ENT MATH BATTLE 📐</h1>
 
     <div id="login-screen">
-        <input type="text" id="username" placeholder="Имя...">
+        <input type="text" id="username" placeholder="Твое Имя...">
         <select id="userteam">
             <option>Команда 1</option><option>Команда 2</option>
             <option>Команда 3</option><option>Команда 4</option>
         </select>
-        <button class="answer-btn btn-1" style="width: 100%; height: 55px;" onclick="join()">ВОЙТИ</button>
+        <button class="answer-btn btn-1" style="width: 100%; height: 60px;" onclick="join()">В БОЙ!</button>
     </div>
 
     <div id="wait-screen" class="hidden">
-        <div id="team-badge">Команда: <span id="my-team-name">?</span> | Баллы: <span id="my-team-score">0</span></div>
+        <div id="team-badge">Твоя команда: <span id="my-team-name">?</span> | Счет: <span id="my-team-score">0</span></div>
         <h2 id="wait-text">Приготовься...</h2>
-        <p>Учитель выбирает вопрос</p>
+        <p>Учитель выбирает задачу</p>
     </div>
 
-    <div id="game-ui-wrapper">
+    <div id="game-wrapper">
         <div id="game-screen" class="hidden">
             <div id="timer-circle">60</div>
             <h2 id="question-text" style="font-size: 20px;">Загрузка...</h2>
@@ -60,24 +61,24 @@
     </div>
 
     <div id="finish-screen" class="hidden">
-        <h1 style="color: gold;">ФИНАЛ БИТВЫ 🏆</h1>
+        <h1 style="color: gold;">РЕЗУЛЬТАТЫ ЕНТ 🏆</h1>
         <div id="leaderboard-data" class="leaderboard"></div>
-        <button class="answer-btn btn-1" style="width:100%; margin-top:20px;" onclick="location.reload()">ЗАНОГО</button>
+        <button class="answer-btn btn-1" style="width:100%; margin-top:20px;" onclick="location.reload()">НОВАЯ ИГРА</button>
     </div>
 
     <div id="admin-area" class="admin-panel hidden">
-        <h3 style="color: red; margin: 0;">РЕЖИМ УЧИТЕЛЯ</h3>
-        <div id="q-buttons"></div>
-        <div style="margin-top: 15px;">
-            <button onclick="showFinal()" class="admin-btn" style="background: gold; color: black;">🏆 ФИНАЛ</button>
-            <button onclick="resetGame()" class="admin-btn" style="background: #cc0000;">🧨 СБРОС</button>
+        <h3 style="color: red; margin: 0 0 10px 0;">УПРАВЛЕНИЕ</h3>
+        <div id="q-buttons" class="admin-btn-grid"></div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="showFinal()" class="admin-btn" style="background: gold; color: black; width: 50%;">ФИНАЛ</button>
+            <button onclick="resetGame()" class="admin-btn" style="background: #cc0000; width: 50%;">СБРОС</button>
         </div>
         <div id="admin-log" style="font-size: 11px; margin-top:15px; background: #111; padding: 10px; border-radius: 10px; height: 150px; overflow-y: auto; border: 1px solid #333;"></div>
     </div>
 </div>
 
 <script>
-// === КОНФИГ FIREBASE (Вставь свой!) ===
+// === ТВОЙ CONFIG FIREBASE (Вставь свой!) ===
 const firebaseConfig = {
   apiKey: "AIzaSyC9QIPxowR7HdMFCxi0bRJ_Z20lXQXr5K0",
   authDomain: "ai-school-quiz.firebaseapp.com",
@@ -94,20 +95,26 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const questions = [
-    { q: "log_{2} 16 + log_{3} 1/27", opts: ["0", "1", "-1", "2"], correct: 1, ai: "Подсказка: В какую степень надо возвести 2, чтобы получить 16? А 3, чтобы получить 1/27 
-ответ 4 + (-3) = 1." },
-    { q: "Найдите сумму 4 + 2 + 1 + 0,5 + ...", opts: ["6", "7", "8", "12"], correct: 2, ai: "Секрет: Это бесконечно убывающая геометрическая прогрессия. Формула: S = b_1 / {1 - q}. b_1 = 4, шаг q = 0,5  Ответ 8." },
-    { q: "Если ребро куба увеличить в 4 раза, во сколько раз увеличится его объем?", opts: ["64 раза", "16 раз", "12 раз", "4 раза"], correct: 0, ai: "Правило: Объем растет как куб коэффициента" }
+    { q: "Вычислите: log₂ 16 + log₃ (1/27)", opts: ["1", "0", "7", "-1"], correct: 0, ai: "Вспоминаем определение логарифма. \n2 в какой степени даст 16? (Это 4). \n3 в какой степени даст 1/27? (Это -3). \nИтого: 4 + (-3) = 1. " },
+    { q: "Сумма прогрессии: 4; 2; 1; 0,5...", opts: ["6", "7", "8", "10"], correct: 2, ai: "Это бесконечно убывающая геом. прогрессия. \nФормула: S = b₁ / (1 - q). \nb₁ = 4, q = 0,5. \nВычисляем: 4 / (1 - 0,5) = 4 / 0,5 = 8. " },
+    { q: "Ребро куба увелич. в 3 раза. Объем?", opts: ["3 раза", "9 раз", "27 раз", "6 раз"], correct: 2, ai: "Объем куба V = a³. \nЕсли сторона стала 3a, то новый объем V = (3a)³. \n3 в кубе это 27. Объем вырастет в 27 раз." },
+    { q: "Найдите производную f(x) = x² + 5x", opts: ["2x + 5", "x + 5", "2x", "5x"], correct: 0, ai: "Применяем правило: (xⁿ)' = n*xⁿ⁻¹. \nПроизводная x² это 2x. \nПроизводная 5x это 5. \nРезультат: 2x + 5. " },
+    { q: "Решите: 2^(x+1) = 16", opts: ["2", "3", "4", "5"], correct: 1, ai: "Приводим к одному основанию. \n16 это 2⁴. \nЗначит: x + 1 = 4. \nОтсюда x = 3. " },
+    { q: "cos(x) = 1/2. Чему равно x?", opts: ["30°", "45°", "60°", "90°"], correct: 2, ai: "Вспоминаем тригонометрическую таблицу. \nКосинус какого угла равен 0,5? \nЭто 60 градусов (или π/3 в радианах). " },
+    { q: "Площадь круга с радиусом R=4", opts: ["4π", "8π", "16π", "32π"], correct: 2, ai: "Формула площади круга: S = πR². \nРадиус 4, значит R² = 16. \nОтвет: 16π. " },
+    { q: "Вектор a(3; 4). Найдите его длину.", opts: ["5", "7", "25", "12"], correct: 0, ai: "Используем теорему Пифагора для векторов. \nL = √(x² + y²). \nL = √(3² + 4²) = √(9 + 16) = √25 = 5. " }
 ];
 
 let myID = ""; let myTeam = ""; let clickCount = 0; let isAdmin = false;
 
 function secretClick() {
     clickCount++;
+    document.getElementById('main-title').style.color = "cyan";
+    setTimeout(() => { document.getElementById('main-title').style.color = "white"; }, 150);
     if(clickCount >= 5) {
         isAdmin = true;
         document.getElementById('admin-area').classList.remove('hidden');
-        document.getElementById('game-ui-wrapper').classList.add('hidden');
+        document.getElementById('game-wrapper').classList.add('hidden');
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('wait-screen').classList.add('hidden');
     }
@@ -116,19 +123,20 @@ function secretClick() {
 function join() {
     let name = document.getElementById('username').value;
     myTeam = document.getElementById('userteam').value;
-    if(!name) return alert("Введи имя!");
+    if(!name) return alert("Имя!");
     myID = name + "_" + Math.floor(Math.random()*100);
     document.getElementById('my-team-name').innerText = myTeam;
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('wait-screen').classList.remove('hidden');
 }
 
-// ИСПРАВЛЕННАЯ ЛОГИКА БАЛЛОВ
 async function sendAnswer(idx) {
     document.getElementById('game-screen').classList.add('hidden');
     document.getElementById('wait-screen').classList.remove('hidden');
+    document.getElementById('wait-text').innerText = "ОТВЕТ ПРИНЯТ!";
 
     const taskSnap = await db.ref('currentTask').once('value');
+    if(!taskSnap.exists()) return;
     const correctIdx = taskSnap.val().correct;
     
     const roundSnap = await db.ref('roundAnswers').once('value');
@@ -136,40 +144,35 @@ async function sendAnswer(idx) {
     const hasTeamAnswered = Object.values(roundData).some(a => a.team === myTeam);
 
     if (!hasTeamAnswered) {
-        // Считаем сколько ПРАВИЛЬНЫХ ответов уже было до нас
         let correctOrder = Object.values(roundData).filter(a => a.correct === true).length;
         let points = 0;
-
         if (idx === correctIdx) {
             if (correctOrder === 0) points = 10;
             else if (correctOrder === 1) points = 5;
             else if (correctOrder === 2) points = 1;
         }
-
-        db.ref('roundAnswers').push({ 
-            team: myTeam, 
-            correct: (idx === correctIdx), 
-            points: points 
-        });
-
+        db.ref('roundAnswers').push({ team: myTeam, correct: (idx === correctIdx), points: points });
         if (points > 0) {
             db.ref('teamScores/' + myTeam).transaction(c => (c || 0) + points);
         }
     }
 }
 
+const qBtnContainer = document.getElementById('q-buttons');
 questions.forEach((q, i) => {
-    let btn = document.createElement('button'); btn.className = "admin-btn"; btn.innerText = "ВОПРОС " + (i+1);
+    let btn = document.createElement('button');
+    btn.className = "admin-btn";
+    btn.innerText = "Q" + (i + 1);
     btn.onclick = () => {
         db.ref('roundAnswers').remove();
         db.ref('gameState').set({ status: "play", qId: i });
         db.ref('currentTask').set(q);
     };
-    document.getElementById('q-buttons').appendChild(btn);
+    qBtnContainer.appendChild(btn);
 });
 
 function showFinal() { db.ref('gameState').set({ status: "finish" }); }
-function resetGame() { if(confirm("Сбросить игру?")) { db.ref().remove(); location.reload(); } }
+function resetGame() { if(confirm("Сбросить баллы команд?")) { db.ref().remove(); location.reload(); } }
 
 db.ref('gameState').on('value', snap => {
     const s = snap.val(); if(!s) return;
@@ -179,7 +182,7 @@ db.ref('gameState').on('value', snap => {
         document.getElementById('finish-screen').classList.add('hidden');
         if(!isAdmin) document.getElementById('game-screen').classList.remove('hidden');
         document.getElementById('question-text').innerText = q.q;
-        q.opts.forEach((t, i) => document.getElementById('opt-'+i).innerText = t);
+        q.opts.forEach((t, i) => { document.getElementById('opt-'+i).innerText = t; });
         typeAI(q.ai); startTimer(60);
     } else if(s.status === "finish") {
         document.getElementById('game-screen').classList.add('hidden');
@@ -200,7 +203,7 @@ function typeAI(text) {
     window.aiInt = setInterval(() => {
         box.innerText += text[i]; i++;
         if(i >= text.length) clearInterval(window.aiInt);
-    }, 130);
+    }, 120);
 }
 
 function startTimer(s) {
@@ -221,13 +224,13 @@ function renderFinalScores() {
         teams.sort((a, b) => (s[b] || 0) - (s[a] || 0));
         teams.forEach((t, index) => {
             let icon = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : ""));
-            board.innerHTML += `<div class="score-row"><span>${icon} ${t}</span><span>${s[t] || 0} баллов</span></div>`;
+            board.innerHTML += `<div class="score-row"><span>${icon} ${t}</span><span>${s[t] || 0}</span></div>`;
         });
     });
 }
 
 db.ref('roundAnswers').on('value', snap => {
-    let log = document.getElementById('admin-log'); log.innerHTML = "<b>ЛОГ РАУНДА:</b><br>";
+    let log = document.getElementById('admin-log'); log.innerHTML = "<b>LOG:</b><br>";
     if(snap.val()) Object.values(snap.val()).forEach(a => {
         log.innerHTML += `${a.correct ? "✅" : "❌"} ${a.team} (+${a.points || 0})<br>`;
     });
@@ -235,5 +238,3 @@ db.ref('roundAnswers').on('value', snap => {
 </script>
 </body>
 </html>
-
-
