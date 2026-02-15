@@ -3,75 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI QUIZ FINAL</title>
+    <title>AI QUIZ PRO FINAL FIX</title>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
         :root { --red: #e21b3c; --blue: #1368ce; --yellow: #d89e00; --green: #26890c; --dark: #46178f; --cyan: #00f2ff; }
         body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: white; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         .container { width: 100%; max-width: 600px; text-align: center; box-sizing: border-box; }
-        
-        /* ИСПРАВЛЕННЫЙ БЛОК ИИ */
-        #ai-box { 
-            background: rgba(0,0,0,0.7); 
-            border: 3px solid var(--cyan); 
-            padding: 20px; 
-            border-radius: 20px; 
-            margin: 15px 0; 
-            font-family: 'Courier New', monospace; 
-            font-size: 18px; 
-            line-height: 1.6;
-            text-align: left; 
-            min-height: 160px; 
-            box-shadow: 0 0 25px rgba(0, 242, 255, 0.3);
-            /* Магия против слипания слов: */
-            white-space: pre-wrap; 
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            word-spacing: 2px;
-        }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .answer-btn { border: none; height: 90px; border-radius: 18px; font-size: 18px; font-weight: 900; color: white; cursor: pointer; }
+        #ai-box { background: rgba(0,0,0,0.7); border: 3px solid var(--cyan); padding: 15px; border-radius: 20px; margin: 15px 0; font-family: monospace; font-size: 17px; line-height: 1.6; text-align: left; min-height: 130px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; word-spacing: 2px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .answer-btn { border: none; height: 85px; border-radius: 15px; font-size: 16px; font-weight: 900; color: white; cursor: pointer; }
         .btn-0 { background: var(--red); } .btn-1 { background: var(--blue); }
         .btn-2 { background: var(--yellow); } .btn-3 { background: var(--green); }
-        
-        #team-badge { background: var(--cyan); color: var(--dark); padding: 10px 20px; border-radius: 50px; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
-        #timer-circle { font-size: 32px; font-weight: 900; background: white; color: var(--dark); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 10px auto; border: 4px solid var(--cyan); }
-        
+        #team-badge { background: var(--cyan); color: var(--dark); padding: 8px 15px; border-radius: 50px; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
+        #timer-circle { font-size: 30px; font-weight: 900; background: white; color: var(--dark); width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 10px auto; border: 4px solid var(--cyan); }
         .hidden { display: none !important; }
-        input, select { padding: 15px; width: 90%; border-radius: 12px; border: none; margin: 10px; font-size: 18px; }
-        .leaderboard { background: white; color: black; border-radius: 20px; padding: 20px; }
-        .score-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 2px solid #eee; font-size: 20px; font-weight: bold; }
-        
-        .admin-panel { background: #000; padding: 20px; border: 3px solid red; margin-top: 10px; border-radius: 25px; text-align: left; width: 100%; box-sizing: border-box; }
-        .admin-btn { background: #222; color: white; border: 1px solid #444; padding: 14px; margin: 5px; cursor: pointer; border-radius: 10px; width: 45%; font-weight: bold; }
+        input, select { padding: 12px; width: 90%; border-radius: 10px; border: none; margin: 8px; font-size: 16px; }
+        .leaderboard { background: white; color: black; border-radius: 20px; padding: 15px; }
+        .score-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 2px solid #eee; font-size: 19px; font-weight: bold; }
+        .admin-panel { background: #000; padding: 20px; border: 3px solid red; margin-top: 10px; border-radius: 20px; text-align: left; width: 100%; box-sizing: border-box; }
+        .admin-btn { background: #222; color: white; border: 1px solid #444; padding: 12px; margin: 5px; cursor: pointer; border-radius: 8px; width: 45%; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 id="main-title" onclick="secretClick()" style="cursor:pointer; user-select:none; text-shadow: 2px 2px 0px #000;">AI BATTLE 🤖</h1>
+    <h1 id="main-title" onclick="secretClick()" style="cursor:pointer; user-select:none;">AI QUIZ 🤖</h1>
 
     <div id="login-screen">
-        <input type="text" id="username" placeholder="Введи Имя...">
+        <input type="text" id="username" placeholder="Имя...">
         <select id="userteam">
             <option>Команда 1</option><option>Команда 2</option>
             <option>Команда 3</option><option>Команда 4</option>
         </select>
-        <button class="answer-btn btn-1" style="width: 100%; height: 60px;" onclick="join()">В БОЙ!</button>
+        <button class="answer-btn btn-1" style="width: 100%; height: 55px;" onclick="join()">ВОЙТИ</button>
     </div>
 
     <div id="wait-screen" class="hidden">
         <div id="team-badge">Команда: <span id="my-team-name">?</span> | Баллы: <span id="my-team-score">0</span></div>
         <h2 id="wait-text">Приготовься...</h2>
-        <p>Учитель запускает вопрос</p>
+        <p>Учитель выбирает вопрос</p>
     </div>
 
     <div id="game-ui-wrapper">
         <div id="game-screen" class="hidden">
             <div id="timer-circle">60</div>
-            <h2 id="question-text" style="margin: 10px 0;">Загрузка...</h2>
+            <h2 id="question-text" style="font-size: 20px;">Загрузка...</h2>
             <div id="ai-box"></div>
             <div id="answers-grid" class="grid">
                 <button class="answer-btn btn-0" id="opt-0" onclick="sendAnswer(0)"></button>
@@ -83,19 +60,19 @@
     </div>
 
     <div id="finish-screen" class="hidden">
-        <h1 style="color: gold;">ПОБЕДИТЕЛИ 🏆</h1>
+        <h1 style="color: gold;">ФИНАЛ БИТВЫ 🏆</h1>
         <div id="leaderboard-data" class="leaderboard"></div>
-        <button class="answer-btn btn-1" style="width:100%; margin-top:20px;" onclick="location.reload()">НОВАЯ ИГРА</button>
+        <button class="answer-btn btn-1" style="width:100%; margin-top:20px;" onclick="location.reload()">ЗАНОГО</button>
     </div>
 
     <div id="admin-area" class="admin-panel hidden">
-        <h3 style="color: red; margin: 0;">ПАНЕЛЬ УПРАВЛЕНИЯ</h3>
+        <h3 style="color: red; margin: 0;">РЕЖИМ УЧИТЕЛЯ</h3>
         <div id="q-buttons"></div>
         <div style="margin-top: 15px;">
             <button onclick="showFinal()" class="admin-btn" style="background: gold; color: black;">🏆 ФИНАЛ</button>
             <button onclick="resetGame()" class="admin-btn" style="background: #cc0000;">🧨 СБРОС</button>
         </div>
-        <div id="admin-log" style="font-size: 11px; margin-top:15px; background: #111; padding: 10px; height: 160px; overflow-y: auto; border: 1px solid #333; line-height: 1.4;"></div>
+        <div id="admin-log" style="font-size: 11px; margin-top:15px; background: #111; padding: 10px; border-radius: 10px; height: 150px; overflow-y: auto; border: 1px solid #333;"></div>
     </div>
 </div>
 
@@ -117,9 +94,9 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const questions = [
-    { q: "Как расшифровывается ИИ?", opts: ["Интересная Игра", "Искусственный Интеллект", "Интернет Инструмент", "Истинный Источник"], correct: 1, ai: "Искусственный интеллект — это не просто программа. Это система, способная обучаться на данных, узнавать лица, переводить тексты и даже управлять автомобилем без водителя. Он имитирует работу нашего мозга." },
-    { q: "Может ли ИИ ошибаться?", opts: ["Никогда", "Постоянно", "Да, это галлюцинации", "Только в математике"], correct: 2, ai: "Да, это называется галлюцинациями ИИ. Иногда нейросети придумывают факты, которых не существует, поэтому информацию от ИИ всегда нужно перепроверять человеку." },
-    { q: "Кто отец информатики?", opts: ["Билл Гейтс", "Стив Джобс", "Алан Тьюринг", "Илон Маск"], correct: 2, ai: "Алан Тьюринг предложил тест, чтобы понять, может ли машина мыслить. Если человек в разговоре не поймет, что общается с роботом — значит, машина прошла тест Тьюринга." }
+    { q: "Что такое нейросеть?", opts: ["Программа", "Живой мозг", "Вирус", "Чип"], correct: 0, ai: "Представьте, что нейросеть — это очень прилежный ученик. Он просматривает миллионы картинок, пока не поймет закономерности. Это математика, которая учится на ошибках." },
+    { q: "Для чего нужен ChatGPT?", opts: ["Для еды", "Для текстов", "Для сна", "Для бега"], correct: 1, ai: "Это мощный ИИ-помощник. Он может писать эссе, решать задачи и даже шутить. Главное — помнить, что ИИ иногда ошибается и его нужно проверять." },
+    { q: "ИИ заменит учителей?", opts: ["Да", "Нет", "Уже заменил", "Никогда"], correct: 1, ai: "ИИ — это инструмент, как калькулятор. Он поможет учителю проверять тесты, но он не может вдохновлять, поддерживать и понимать чувства учеников, как человек." }
 ];
 
 let myID = ""; let myTeam = ""; let clickCount = 0; let isAdmin = false;
@@ -138,32 +115,42 @@ function secretClick() {
 function join() {
     let name = document.getElementById('username').value;
     myTeam = document.getElementById('userteam').value;
-    if(!name) return alert("Имя!");
+    if(!name) return alert("Введи имя!");
     myID = name + "_" + Math.floor(Math.random()*100);
     document.getElementById('my-team-name').innerText = myTeam;
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('wait-screen').classList.remove('hidden');
 }
 
+// ИСПРАВЛЕННАЯ ЛОГИКА БАЛЛОВ
 async function sendAnswer(idx) {
     document.getElementById('game-screen').classList.add('hidden');
     document.getElementById('wait-screen').classList.remove('hidden');
 
     const taskSnap = await db.ref('currentTask').once('value');
     const correctIdx = taskSnap.val().correct;
+    
     const roundSnap = await db.ref('roundAnswers').once('value');
     const roundData = roundSnap.val() || {};
     const hasTeamAnswered = Object.values(roundData).some(a => a.team === myTeam);
 
     if (!hasTeamAnswered) {
-        let order = Object.keys(roundData).length;
+        // Считаем сколько ПРАВИЛЬНЫХ ответов уже было до нас
+        let correctOrder = Object.values(roundData).filter(a => a.correct === true).length;
         let points = 0;
+
         if (idx === correctIdx) {
-            if (order === 0) points = 10;
-            else if (order === 1) points = 5;
-            else if (order === 2) points = 1;
+            if (correctOrder === 0) points = 10;
+            else if (correctOrder === 1) points = 5;
+            else if (correctOrder === 2) points = 1;
         }
-        db.ref('roundAnswers').push({ team: myTeam, correct: (idx === correctIdx), points: points });
+
+        db.ref('roundAnswers').push({ 
+            team: myTeam, 
+            correct: (idx === correctIdx), 
+            points: points 
+        });
+
         if (points > 0) {
             db.ref('teamScores/' + myTeam).transaction(c => (c || 0) + points);
         }
@@ -212,7 +199,7 @@ function typeAI(text) {
     window.aiInt = setInterval(() => {
         box.innerText += text[i]; i++;
         if(i >= text.length) clearInterval(window.aiInt);
-    }, 130); // Очень плавная печать
+    }, 130);
 }
 
 function startTimer(s) {
