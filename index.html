@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Battle Quiz</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
+    <style>
+        :root { --red: #e21b3c; --blue: #1368ce; --yellow: #d89e00; --green: #26890c; --dark: #46178f; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: white; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        .container { width: 95%; max-width: 800px; text-align: center; }
+        
+        /* Кнопки как в Кахуте */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .answer-btn { border: none; height: 120px; border-radius: 8px; font-size: 22px; font-weight: bold; color: white; cursor: pointer; transition: transform 0.2s, brightness 0.2s; position: relative; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        .answer-btn:active { transform: scale(0.95); }
+        .btn-0 { background: var(--red); }    .btn-1 { background: var(--blue); }
+        .btn-2 { background: var(--yellow); } .btn-3 { background: var(--green); }
+        
+        /* ИИ и Таймер */
+        #ai-box { background: rgba(0,0,0,0.3); border: 2px solid #00f2ff; padding: 20px; border-radius: 15px; margin: 20px 0; font-family: 'Courier New', monospace; font-size: 18px; text-align: left; min-height: 80px; box-shadow: 0 0 15px #00f2ff55; }
+        #timer-circle { font-size: 50px; font-weight: 900; background: white; color: var(--dark); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 4px solid #00f2ff; }
+        
+        .hidden { display: none !important; }
+        input, select { padding: 15px; width: 80%; border-radius: 10px; border: none; margin: 10px; font-size: 18px; }
+        .admin-panel { background: #00000055; padding: 20px; margin-top: 50px; border-radius: 20px; border: 1px dashed white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="login-screen">
+        <h1 style="font-size: 40px; text-shadow: 2px 2px #000;">AI QUIZ 🤖</h1>
+        <input type="text" id="username" placeholder="ТВОЕ ИМЯ...">
+        <select id="userteam">
+            <option value="Команда 1">Команда 1</option>
+            <option value="Команда 2">Команда 2</option>
+            <option value="Команда 3">Команда 3</option>
+            <option value="Команда 4">Команда 4</option>
+        </select>
+        <button class="answer-btn btn-1" style="width: 100%; height: 60px;" onclick="join()">ПОЕХАЛИ!</button>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div id="timer-circle">60</div>
+        <h1 id="question-text">Ожидание учителя...</h1>
+        <div id="ai-box">ИИ: Готов к работе...</div>
+        
+        <div id="answers-grid" class="grid">
+            <button class="answer-btn btn-0" id="opt-0" onclick="sendAnswer(0)"></button>
+            <button class="answer-btn btn-1" id="opt-1" onclick="sendAnswer(1)"></button>
+            <button class="answer-btn btn-2" id="opt-2" onclick="sendAnswer(2)"></button>
+            <button class="answer-btn btn-3" id="opt-3" onclick="sendAnswer(3)"></button>
+        </div>
+        <h2 id="feedback" class="hidden">ОТВЕТ ПРИНЯТ! ЖДИ...</h2>
+    </div>
+
+    <div id="admin-area" class="admin-panel">
+        <h3>УПРАВЛЕНИЕ (Для тебя)</h3>
+        <button onclick="pushQuestion(1)">ВОПРОС 1</button>
+        <button onclick="pushQuestion(2)">ВОПРОС 2</button>
+        <div id="admin-log" style="font-size: 12px; margin-top: 10px;"></div>
+    </div>
+</div>
+
+<script>
+// === ТВОЙ КОНФИГ ИЗ FIREBASE ===
+const firebaseConfig = {
+  apiKey: "AIzaSyC9QIPxowR7HdMFCxi0bRJ_Z20lXQXr5K0",
+  authDomain: "ai-school-quiz.firebaseapp.com",
+  databaseURL: "https://ai-school-quiz-default-rtdb.firebaseio.com",
+  projectId: "ai-school-quiz",
+  storageBucket: "ai-school-quiz.firebasestorage.app",
+  messagingSenderId: "155195208675",
+  appId: "1:155195208675:web:21799fc642e88ddce826d6",
+  measurementId: "G-Y4N2NGVNS9"
+};
+// ==============================
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const questions = {
+    1: { q: "Что такое ChatGPT?", opts: ["Нейросеть", "Робот-пылесос", "Вирус", "Игра"], ai: "Анализирую... ChatGPT основан на архитектуре Transformer. Это языковая модель. Правильный ответ: Нейросеть." },
+    2: { q: "Для чего нужен ИИ в школе?", opts: ["Списывать", "Помогать учить", "Ни для чего", "Заменить обеды"], ai: "Поиск данных... ИИ может персонализировать обучение и проверять тесты быстрее человека." }
+};
+
+function join() {
+    let name = document.getElementById('username').value;
+    if(!name) return alert("Имя введи!");
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+}
+
+function sendAnswer(idx) {
+    let name = document.getElementById('username').value;
+    let team = document.getElementById('userteam').value;
+    db.ref('answers/' + name).set({ team: team, answer: idx, time: Date.now() });
+    document.getElementById('answers-grid').classList.add('hidden');
+    document.getElementById('feedback').classList.remove('hidden');
+}
+
+function pushQuestion(id) {
+    db.ref('answers').remove();
+    db.ref('currentTask').set({ id: id, ...questions[id], startTime: Date.now() });
+}
+
+db.ref('currentTask').on('value', snap => {
+    const data = snap.val();
+    if(data) {
+        document.getElementById('question-text').innerText = data.q;
+        data.opts.forEach((text, i) => {
+            document.getElementById('opt-' + i).innerText = text;
+        });
+        document.getElementById('answers-grid').classList.remove('hidden');
+        document.getElementById('feedback').classList.add('hidden');
+        startTimer(60);
+        typeAI(data.ai);
+    }
+});
+
+function typeAI(text) {
+    let i = 0; let box = document.getElementById('ai-box'); box.innerText = "";
+    let int = setInterval(() => { box.innerText += text[i]; i++; if(i >= text.length) clearInterval(int); }, 40);
+}
+
+function startTimer(s) {
+    let t = s; let el = document.getElementById('timer-circle');
+    let int = setInterval(() => { t--; el.innerText = t; if(t <= 0) clearInterval(int); }, 1000);
+}
+
+// Лог ответов для тебя
+db.ref('answers').on('value', snap => {
+    let log = document.getElementById('admin-log'); log.innerHTML = "";
+    if(snap.val()) Object.keys(snap.val()).forEach(u => {
+        log.innerHTML += `[${u} - ${snap.val()[u].team} ответил] `;
+    });
+});
+</script>
+</body>
+</html>
