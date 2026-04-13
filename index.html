@@ -9,49 +9,77 @@
     <style>
         :root { --red: #e21b3c; --blue: #1368ce; --yellow: #d89e00; --green: #26890c; --dark: #46178f; --cyan: #00f2ff; }
         body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: white; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 100%; max-width: 600px; text-align: center; box-sizing: border-box; }
-        #ai-box { background: rgba(0,0,0,0.7); border: 3px solid var(--cyan); padding: 20px; border-radius: 20px; margin: 15px 0; font-family: monospace; font-size: 17px; line-height: 1.6; text-align: left; min-height: 140px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; word-spacing: 2px; }
+        .container { width: 100%; max-width: 600px; text-align: center; box-sizing: border-box; position: relative; z-index: 1; }
+        
+        #ai-box { background: rgba(0,0,0,0.7); border: 2px solid var(--cyan); padding: 15px; border-radius: 15px; margin: 15px 0; font-family: monospace; font-size: 15px; line-height: 1.4; text-align: left; min-height: 80px; color: #a3f7ff; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .answer-btn { border: none; height: 90px; border-radius: 18px; font-size: 18px; font-weight: 900; color: white; cursor: pointer; }
-        .btn-0 { background: var(--red); } .btn-1 { background: var(--blue); }
-        .btn-2 { background: var(--yellow); } .btn-3 { background: var(--green); }
-        #team-badge { background: var(--cyan); color: var(--dark); padding: 8px 15px; border-radius: 50px; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
-        #timer-circle { font-size: 30px; font-weight: 900; background: white; color: var(--dark); width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 10px auto; border: 4px solid var(--cyan); }
+        
+        .answer-btn { border: none; height: 100px; border-radius: 12px; font-size: 20px; font-weight: 900; color: white; cursor: pointer; transition: transform 0.1s, filter 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.2); }
+        .answer-btn:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0); }
+        .btn-0 { background: var(--red); box-shadow: 0 4px 0 #a9122a; } 
+        .btn-1 { background: var(--blue); box-shadow: 0 4px 0 #0d4a96; }
+        .btn-2 { background: var(--yellow); box-shadow: 0 4px 0 #9c7300; } 
+        .btn-3 { background: var(--green); box-shadow: 0 4px 0 #1b6308; }
+        
+        #team-badge { background: var(--cyan); color: var(--dark); padding: 8px 15px; border-radius: 50px; font-weight: bold; margin-bottom: 10px; font-size: 14px; display: inline-block; }
+        #timer-circle { font-size: 32px; font-weight: 900; background: white; color: var(--dark); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 10px auto; border: 4px solid var(--cyan); transition: transform 0.2s; }
+        .timer-warning { background: var(--red) !important; color: white !important; border-color: white !important; animation: pulse 0.5s infinite; }
+        
         .hidden { display: none !important; }
-        input, select { padding: 12px; width: 90%; border-radius: 10px; border: none; margin: 8px; font-size: 16px; }
+        input, select { padding: 14px; width: 90%; border-radius: 10px; border: none; margin: 8px 0; font-size: 16px; box-sizing: border-box; text-align: center; font-weight: bold; }
+        
         .leaderboard { background: white; color: black; border-radius: 20px; padding: 20px; text-align: left; }
-        .score-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 2px solid #eee; font-size: 20px; font-weight: bold; }
-        .admin-panel { background: #000; padding: 20px; border: 3px solid red; margin-top: 10px; border-radius: 20px; text-align: left; width: 100%; box-sizing: border-box; }
+        .score-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 2px solid #eee; font-size: 20px; font-weight: bold; }
+        
+        /* Панель админа */
+        .admin-panel { background: #111; padding: 20px; border: 2px solid #555; margin-top: 20px; border-radius: 15px; text-align: left; width: 100%; box-sizing: border-box; }
         .admin-btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
-        .admin-btn { background: #222; color: white; border: 1px solid #444; padding: 12px; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .admin-btn { background: #333; color: white; border: none; padding: 12px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+        .admin-btn:hover { background: #555; }
+        .admin-section-title { color: #888; font-size: 12px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        #answer-screen { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 20px; margin-top: 20px; }
+        .correct-box { font-size: 24px; font-weight: bold; padding: 20px; border-radius: 15px; margin: 20px 0; background: var(--green); color: white; }
+
+        /* Экран гигантского отсчета */
+        #giant-countdown { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--dark); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        #giant-number { font-size: 150px; font-weight: 900; color: white; text-shadow: 0 0 20px var(--cyan); margin: 0; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
+<div id="giant-countdown" class="hidden">
+    <h2 style="color: var(--cyan); margin-bottom: -20px;">ПРИГОТОВЬТЕСЬ!</h2>
+    <h1 id="giant-number">5</h1>
+</div>
+
 <div class="container">
-    <h1 id="main-title" onclick="secretClick()" style="cursor:pointer; user-select:none;">ENT MATH BATTLE 📐</h1>
+    <h1 id="main-title" onclick="secretClick()" style="cursor:pointer; user-select:none; font-size: 32px;">MATH BATTLE 📐</h1>
 
     <div id="login-screen">
+        <input type="number" id="game-pin" placeholder="ПИН-КОД ИГРЫ">
         <input type="text" id="username" placeholder="Твое Имя...">
         <select id="userteam">
             <option>Команда 1</option><option>Команда 2</option>
             <option>Команда 3</option><option>Команда 4</option>
             <option>Гость</option>
         </select>
-        <button class="answer-btn btn-1" style="width: 100%; height: 60px;" onclick="join()">В БОЙ!</button>
+        <button class="answer-btn btn-1" style="width: 100%; height: 60px; margin-top: 10px;" onclick="join()">ВОЙТИ В ИГРУ</button>
+        <p id="login-error" style="color: #ff4d4d; font-weight: bold; margin-top: 10px;"></p>
     </div>
 
     <div id="wait-screen" class="hidden">
-        <div id="team-badge">Твоя команда: <span id="my-team-name">?</span> | Счет: <span id="my-team-score">0</span></div>
-        <h2 id="wait-text">Приготовься...</h2>
-        <p>Учитель выбирает задачу</p>
+        <div id="team-badge">Команда: <span id="my-team-name">?</span> | Счет: <span id="my-team-score">0</span></div>
+        <h2 id="wait-text">Ожидание учителя...</h2>
+        <p>Смотри на экран в классе!</p>
     </div>
 
-    <div id="game-wrapper">
-        <div id="game-screen" class="hidden">
-            <div id="timer-circle">60</div>
-            <h2 id="question-text" style="font-size: 20px;">Загрузка...</h2>
-            <div id="ai-box"></div>
+    <div id="game-wrapper" class="hidden">
+        <div id="game-screen">
+            <div id="timer-circle">20</div>
+            <h2 id="question-text" style="font-size: 22px; margin-bottom: 5px;">Загрузка...</h2>
+            <div id="ai-box">🤖 Загрузка ИИ...</div>
             <div id="answers-grid" class="grid">
                 <button class="answer-btn btn-0" id="opt-0" onclick="sendAnswer(0)"></button>
                 <button class="answer-btn btn-1" id="opt-1" onclick="sendAnswer(1)"></button>
@@ -61,25 +89,87 @@
         </div>
     </div>
 
+    <div id="answer-screen" class="hidden">
+        <h2 style="color: white; margin: 0;">ВРЕМЯ ВЫШЛО!</h2>
+        <p style="color: #ccc;">Правильный ответ:</p>
+        <div id="correct-answer-box" class="correct-box"></div>
+        <h3 id="my-result-text" style="font-size: 22px; margin-top: 10px;"></h3>
+    </div>
+
     <div id="finish-screen" class="hidden">
-        <h1 style="color: gold;">РЕЗУЛЬТАТЫ ЕНТ 🏆</h1>
+        <h1 style="color: gold; font-size: 36px; text-shadow: 0 0 10px gold;">РЕЗУЛЬТАТЫ 🏆</h1>
         <div id="leaderboard-data" class="leaderboard"></div>
-        <button class="answer-btn btn-1" style="width:100%; margin-top:20px;" onclick="location.reload()">НОВАЯ ИГРА</button>
+        <button class="answer-btn btn-1" style="width:100%; margin-top:20px; height: 60px;" onclick="location.reload()">НА ГЛАВНУЮ</button>
     </div>
 
     <div id="admin-area" class="admin-panel hidden">
-        <h3 style="color: red; margin: 0 0 10px 0;">УПРАВЛЕНИЕ</h3>
-        <div id="q-buttons" class="admin-btn-grid"></div>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="showFinal()" class="admin-btn" style="background: gold; color: black; width: 50%;">ФИНАЛ</button>
-            <button onclick="resetGame()" class="admin-btn" style="background: #cc0000; width: 50%;">СБРОС</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; border-radius: 10px; margin-bottom: 15px;">
+            <div>
+                <h3 style="color: var(--cyan); margin: 0 0 5px 0;">ПУЛЬТ УЧИТЕЛЯ</h3>
+                <div style="font-size: 24px; font-weight: bold; color: gold;">ПИН: <span id="admin-pin-display">---</span></div>
+            </div>
+            <img id="qr-code-img" src="" style="width: 80px; height: 80px; border-radius: 5px; display: none; background: white; padding: 2px;">
         </div>
-        <div id="admin-log" style="font-size: 11px; margin-top:15px; background: #111; padding: 10px; border-radius: 10px; height: 150px; overflow-y: auto; border: 1px solid #333;"></div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button onclick="generatePinAndOpen()" class="admin-btn" style="background: var(--green); width: 50%;">ОТКРЫТЬ КОМНАТУ</button>
+            <button onclick="lockRoom()" class="admin-btn" style="background: var(--red); width: 50%;">ЗАКРЫТЬ ВХОД</button>
+        </div>
+
+        <button onclick="showCurrentAnswer()" class="admin-btn" style="background: var(--dark); width: 100%; margin-bottom: 15px; border: 2px solid var(--cyan); font-size: 16px;">ПОКАЗАТЬ ОТВЕТ ИГРОКАМ</button>
+        
+        <div class="admin-section-title">Обычные вопросы (4 варианта)</div>
+        <div id="q-buttons-standard" class="admin-btn-grid"></div>
+        
+        <div class="admin-section-title" style="margin-top: 10px;">Правда / Ложь (2 варианта)</div>
+        <div id="q-buttons-tf" class="admin-btn-grid" style="grid-template-columns: repeat(5, 1fr);"></div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="showFinal()" class="admin-btn" style="background: gold; color: black; width: 50%;">ФИНАЛ</button>
+            <button onclick="resetGame()" class="admin-btn" style="background: #555; width: 50%;">СБРОС БАЗЫ</button>
+        </div>
     </div>
 </div>
 
 <script>
-// === ТВОЙ CONFIG FIREBASE (Вставь свой!) ===
+// === ГЕНЕРАТОР ЗВУКОВ (Web Audio API) ===
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    const now = audioCtx.currentTime;
+    
+    if (type === 'correct') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        osc.start(now); osc.stop(now + 0.5);
+    } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now); osc.stop(now + 0.3);
+    } else if (type === 'tick') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(800, now);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
+    }
+}
+// =======================================
+
+// === ТВОЙ CONFIG FIREBASE ===
 const firebaseConfig = {
   apiKey: "AIzaSyC9QIPxowR7HdMFCxi0bRJ_Z20lXQXr5K0",
   authDomain: "ai-school-quiz.firebaseapp.com",
@@ -90,41 +180,103 @@ const firebaseConfig = {
   appId: "1:155195208675:web:21799fc642e88ddce826d6",
   measurementId: "G-Y4N2NGVNS9"
 };
-// =====================================
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const questions = [
-    { q: "Вычислите: log₂ 16 + log₃ (1/27)", opts: ["1", "0", "7", "-1"], correct: 0, ai: "Вспоминаем определение логарифма. \n2 в какой степени даст 16? (Это 4). \n3 в какой степени даст 1/27? (Это -3). \nИтого: 4 + (-3) = 1. " },
-    { q: "Сумма прогрессии: 4; 2; 1; 0,5...", opts: ["6", "7", "8", "10"], correct: 2, ai: "Это бесконечно убывающая геом. прогрессия. \nФормула: S = b₁ / (1 - q). \nb₁ = 4, q = 0,5. \nВычисляем: 4 / (1 - 0,5) = 4 / 0,5 = 8. " },
-    { q: "Ребро куба увелич. в 3 раза. Объем?", opts: ["3 раза", "9 раз", "27 раз", "6 раз"], correct: 2, ai: "Объем куба V = a³. \nЕсли сторона стала 3a, то новый объем V = (3a)³. \n3 в кубе это 27. Объем вырастет в 27 раз." },
-    { q: "Найдите производную f(x) = x² + 5x", opts: ["2x + 5", "x + 5", "2x", "5x"], correct: 0, ai: "Применяем правило: (xⁿ)' = n*xⁿ⁻¹. \nПроизводная x² это 2x. \nПроизводная 5x это 5. \nРезультат: 2x + 5. " },
-    { q: "Решите: 2^(x+1) = 16", opts: ["2", "3", "4", "5"], correct: 1, ai: "Приводим к одному основанию. \n16 это 2⁴. \nЗначит: x + 1 = 4. \nОтсюда x = 3. " },
-    { q: "cos(x) = 1/2. Чему равно x?", opts: ["30°", "45°", "60°", "90°"], correct: 2, ai: "Вспоминаем тригонометрическую таблицу. \nКосинус какого угла равен 0,5? \nЭто 60 градусов (или π/3 в радианах). " },
-    { q: "Площадь круга с радиусом R=4", opts: ["4π", "8π", "16π", "32π"], correct: 2, ai: "Формула площади круга: S = πR². \nРадиус 4, значит R² = 16. \nОтвет: 16π. " },
-    { q: "Вектор a(3; 4). Найдите его длину.", opts: ["5", "7", "25", "12"], correct: 0, ai: "Используем теорему Пифагора для векторов. \nL = √(x² + y²). \nL = √(3² + 4²) = √(9 + 16) = √25 = 5. " }
+    { q: "Вычислите: 3² + 2²", opts: ["13", "10", "25", "5"], correct: 0, ai: "3² = 9. 2² = 4. Складываем: 9 + 4 = 13." },
+    { q: "Найдите 20% от числа 150", opts: ["15", "50", "30", "20"], correct: 2, ai: "10% это 15. Значит 20% будет в два раза больше: 15 * 2 = 30." },
+    { q: "Чему равно |-15| + 5?", opts: ["-10", "20", "10", "-20"], correct: 1, ai: "Модуль делает число положительным. 15 + 5 = 20." },
+    { q: "Сократите дробь 12/16", opts: ["1/2", "3/4", "2/3", "5/8"], correct: 1, ai: "Делим верх и низ на 4, получаем 3/4." },
+    { q: "Решите уравнение: 2x = -18", opts: ["9", "-16", "-20", "-9"], correct: 3, ai: "(-18) делим на 2. Минус на плюс дает минус. Ответ: -9." },
+    { q: "Сколько градусов в прямом угле?", opts: ["180°", "45°", "90°", "360°"], correct: 2, ai: "Прямой угол (как угол квадрата) — это ровно 90 градусов." },
+    { q: "Вычислите: -5 + (-7)", opts: ["-12", "12", "-2", "2"], correct: 0, ai: "Должен 5 и занял еще 7. Итого долг 12. Ответ: -12." },
+    { q: "Правда или ложь: 0.5 — это 1/2.", opts: ["Правда", "Ложь"], correct: 0, ai: "Половина единицы в десятичной записи — это 0.5, а в обыкновенной дроби — 1/2." },
+    { q: "Правда или ложь: Сумма углов треугольника 360°.", opts: ["Правда", "Ложь"], correct: 1, ai: "Сумма углов треугольника всегда 180°." },
+    { q: "Правда или ложь: Число 15 простое.", opts: ["Правда", "Ложь"], correct: 1, ai: "15 делится на 3 и на 5, значит оно составное." },
+    { q: "Правда или ложь: 3³ равно 9.", opts: ["Правда", "Ложь"], correct: 1, ai: "3³ = 3 * 3 * 3 = 27. А 9 — это 3²." },
+    { q: "Правда или ложь: -10 меньше, чем -2.", opts: ["Правда", "Ложь"], correct: 0, ai: "На числовой прямой -10 левее, значит оно меньше." }
 ];
 
-let myID = ""; let myTeam = ""; let clickCount = 0; let isAdmin = false;
+let myID = ""; let myTeam = ""; let clickCount = 0; let isAdmin = false; let myLastAnswerCorrect = null;
 
 function secretClick() {
     clickCount++;
-    document.getElementById('main-title').style.color = "cyan";
+    document.getElementById('main-title').style.color = "var(--cyan)";
     setTimeout(() => { document.getElementById('main-title').style.color = "white"; }, 150);
     if(clickCount >= 5) {
         isAdmin = true;
         document.getElementById('admin-area').classList.remove('hidden');
-        document.getElementById('game-wrapper').classList.add('hidden');
         document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('wait-screen').classList.add('hidden');
+        db.ref('gameState/pin').once('value', snap => {
+            if(snap.exists()) {
+                document.getElementById('admin-pin-display').innerText = snap.val();
+                generateQR();
+            }
+        });
+        // Инициализация аудиоконтекста жестом админа
+        if(audioCtx.state === 'suspended') audioCtx.resume();
     }
 }
 
-function join() {
+// === ЛОГИКА АДМИНА ===
+function generateQR() {
+    let currentUrl = window.location.href.split('?')[0]; // Берем чистую ссылку без мусора
+    let qrImg = document.getElementById('qr-code-img');
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
+    qrImg.style.display = 'block';
+}
+
+function generatePinAndOpen() {
+    let pin = Math.floor(1000 + Math.random() * 9000);
+    db.ref('gameState').set({ status: "lobby", pin: pin, locked: false });
+    document.getElementById('admin-pin-display').innerText = pin;
+    generateQR();
+    alert("Комната открыта! ПИН-код: " + pin);
+}
+
+function lockRoom() {
+    db.ref('gameState/locked').set(true);
+    alert("Вход закрыт! Больше никто не присоединится.");
+}
+
+function triggerQuestion(i) {
+    db.ref('roundAnswers').remove();
+    db.ref('gameState').update({ status: "countdown", nextQId: i });
+    setTimeout(() => {
+        db.ref('gameState').update({ status: "play", qId: i });
+        db.ref('currentTask').set(questions[i]);
+    }, 5000);
+}
+
+const qBtnStandard = document.getElementById('q-buttons-standard');
+const qBtnTF = document.getElementById('q-buttons-tf');
+questions.forEach((q, i) => {
+    let btn = document.createElement('button');
+    btn.className = "admin-btn";
+    btn.innerText = "Q" + (i + 1);
+    btn.onclick = () => triggerQuestion(i);
+    if (i < 7) qBtnStandard.appendChild(btn); 
+    else qBtnTF.appendChild(btn);
+});
+
+// === ЛОГИКА ИГРОКА ===
+async function join() {
+    if(audioCtx.state === 'suspended') audioCtx.resume(); // Инит звука у игрока
+    let inputPin = parseInt(document.getElementById('game-pin').value);
     let name = document.getElementById('username').value;
     myTeam = document.getElementById('userteam').value;
-    if(!name) return alert("Имя!");
+    const errorLog = document.getElementById('login-error');
+
+    if(!inputPin || !name) { errorLog.innerText = "Введи ПИН-код и Имя!"; return; }
+
+    const stateSnap = await db.ref('gameState').once('value');
+    if (!stateSnap.exists()) { errorLog.innerText = "Игра еще не создана."; return; }
+
+    const state = stateSnap.val();
+    if (state.pin !== inputPin) { errorLog.innerText = "Неверный ПИН-код!"; return; }
+    if (state.locked === true) { errorLog.innerText = "Вход в комнату закрыт!"; return; }
+
     myID = name + "_" + Math.floor(Math.random()*100);
     document.getElementById('my-team-name').innerText = myTeam;
     document.getElementById('login-screen').classList.add('hidden');
@@ -132,13 +284,18 @@ function join() {
 }
 
 async function sendAnswer(idx) {
-    document.getElementById('game-screen').classList.add('hidden');
+    document.getElementById('game-wrapper').classList.add('hidden');
     document.getElementById('wait-screen').classList.remove('hidden');
-    document.getElementById('wait-text').innerText = "ОТВЕТ ПРИНЯТ!";
+    
+    if (myTeam === "Гость") {
+        document.getElementById('wait-text').innerText = "Ты наблюдатель! 🍿"; return; 
+    }
 
+    document.getElementById('wait-text').innerText = "ОТВЕТ ПРИНЯТ!";
     const taskSnap = await db.ref('currentTask').once('value');
     if(!taskSnap.exists()) return;
     const correctIdx = taskSnap.val().correct;
+    myLastAnswerCorrect = (idx === correctIdx); 
     
     const roundSnap = await db.ref('roundAnswers').once('value');
     const roundData = roundSnap.val() || {};
@@ -147,55 +304,100 @@ async function sendAnswer(idx) {
     if (!hasTeamAnswered) {
         let correctOrder = Object.values(roundData).filter(a => a.correct === true).length;
         let points = 0;
-        if (idx === correctIdx) {
+        if (myLastAnswerCorrect) {
             if (correctOrder === 0) points = 10;
             else if (correctOrder === 1) points = 5;
             else if (correctOrder === 2) points = 1;
         }
-        db.ref('roundAnswers').push({ team: myTeam, correct: (idx === correctIdx), points: points });
-        if (points > 0) {
-            db.ref('teamScores/' + myTeam).transaction(c => (c || 0) + points);
-        }
+        db.ref('roundAnswers').push({ team: myTeam, correct: myLastAnswerCorrect, points: points, player: myID });
+        if (points > 0) db.ref('teamScores/' + myTeam).transaction(c => (c || 0) + points);
     }
 }
 
-const qBtnContainer = document.getElementById('q-buttons');
-questions.forEach((q, i) => {
-    let btn = document.createElement('button');
-    btn.className = "admin-btn";
-    btn.innerText = "Q" + (i + 1);
-    btn.onclick = () => {
-        db.ref('roundAnswers').remove();
-        db.ref('gameState').set({ status: "play", qId: i });
-        db.ref('currentTask').set(q);
-    };
-    qBtnContainer.appendChild(btn);
-});
-
-function showFinal() { db.ref('gameState').set({ status: "finish" }); }
-function resetGame() { if(confirm("Сбросить баллы команд?")) { db.ref().remove(); location.reload(); } }
-
+// === СЛУШАТЕЛЬ СОСТОЯНИЯ ИГРЫ ===
 db.ref('gameState').on('value', snap => {
     const s = snap.val(); if(!s) return;
-    if(s.status === "play") {
+    
+    document.getElementById('giant-countdown').classList.add('hidden');
+    
+    if(s.status === "countdown") {
+        document.getElementById('wait-screen').classList.add('hidden');
+        document.getElementById('game-wrapper').classList.add('hidden');
+        document.getElementById('answer-screen').classList.add('hidden');
+        if(!isAdmin) document.getElementById('giant-countdown').classList.remove('hidden');
+        
+        let c = 5;
+        document.getElementById('giant-number').innerText = c;
+        playSound('tick');
+        let cInt = setInterval(() => {
+            c--;
+            if(c > 0) {
+                document.getElementById('giant-number').innerText = c;
+                playSound('tick');
+            } else {
+                clearInterval(cInt);
+            }
+        }, 1000);
+
+    } else if(s.status === "play") {
+        myLastAnswerCorrect = null; 
         const q = questions[s.qId];
         document.getElementById('wait-screen').classList.add('hidden');
-        document.getElementById('finish-screen').classList.add('hidden');
-        if(!isAdmin) document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('answer-screen').classList.add('hidden');
+        
+        if(!isAdmin) document.getElementById('game-wrapper').classList.remove('hidden');
         document.getElementById('question-text').innerText = q.q;
-        q.opts.forEach((t, i) => { document.getElementById('opt-'+i).innerText = t; });
-        typeAI(q.ai); startTimer(60);
-    } else if(s.status === "finish") {
-        document.getElementById('game-screen').classList.add('hidden');
+        
+        q.opts.forEach((t, i) => { 
+            let btn = document.getElementById('opt-'+i);
+            btn.innerText = t; 
+            btn.classList.remove('hidden');
+        });
+        if(q.opts.length === 2) {
+            document.getElementById('opt-2').classList.add('hidden');
+            document.getElementById('opt-3').classList.add('hidden');
+        }
+        typeAI(q.ai); startTimer(20); 
+        
+    } else if(s.status === "show_answer") {
+        document.getElementById('game-wrapper').classList.add('hidden');
         document.getElementById('wait-screen').classList.add('hidden');
+        
+        if(!isAdmin) {
+            document.getElementById('answer-screen').classList.remove('hidden');
+            let q = questions[s.qId];
+            document.getElementById('correct-answer-box').innerText = q.opts[q.correct];
+            
+            let resText = document.getElementById('my-result-text');
+            if(myTeam === "Гость") {
+                resText.innerText = "Вы наблюдатель"; resText.style.color = "gray";
+            } else if(myLastAnswerCorrect === true) {
+                resText.innerText = "✅ ВЕРНО!"; resText.style.color = "lime";
+                playSound('correct');
+            } else if(myLastAnswerCorrect === false) {
+                resText.innerText = "❌ НЕВЕРНО!"; resText.style.color = "red";
+                playSound('wrong');
+            } else {
+                resText.innerText = "⏳ ВРЕМЯ ВЫШЛО!"; resText.style.color = "orange";
+                playSound('wrong');
+            }
+        }
+    } else if(s.status === "finish") {
+        document.getElementById('game-wrapper').classList.add('hidden');
+        document.getElementById('wait-screen').classList.add('hidden');
+        document.getElementById('answer-screen').classList.add('hidden');
         document.getElementById('finish-screen').classList.remove('hidden');
         renderFinalScores();
     }
 });
 
+function showCurrentAnswer() { db.ref('gameState').update({ status: "show_answer" }); }
+function showFinal() { db.ref('gameState').update({ status: "finish" }); }
+function resetGame() { if(confirm("Сбросить базу?")) { db.ref().remove(); location.reload(); } }
+
 db.ref('teamScores').on('value', snap => {
     const s = snap.val() || {};
-    if(myTeam && s[myTeam]) document.getElementById('my-team-score').innerText = s[myTeam];
+    if(myTeam && s[myTeam] && myTeam !== "Гость") document.getElementById('my-team-score').innerText = s[myTeam];
 });
 
 function typeAI(text) {
@@ -204,23 +406,37 @@ function typeAI(text) {
     window.aiInt = setInterval(() => {
         box.innerText += text[i]; i++;
         if(i >= text.length) clearInterval(window.aiInt);
-    }, 120);
+    }, 40); 
 }
 
 function startTimer(s) {
-    let t = s; let el = document.getElementById('timer-circle');
+    let t = s; let el = document.getElementById('timer-circle'); 
+    el.innerText = t; el.classList.remove('timer-warning');
     if(window.timerInt) clearInterval(window.timerInt);
+    
     window.timerInt = setInterval(() => {
         t--; el.innerText = t;
-        if(t <= 0) { clearInterval(window.timerInt); document.getElementById('game-screen').classList.add('hidden'); }
+        
+        // Звуки тиканья и мигание таймера на последних 5 секундах
+        if(t <= 5 && t > 0) {
+            playSound('tick');
+            el.classList.add('timer-warning');
+        }
+        
+        if(t <= 0) { 
+            clearInterval(window.timerInt); 
+            document.getElementById('game-wrapper').classList.add('hidden');
+            if(!isAdmin && myLastAnswerCorrect === null && myTeam !== "Гость") {
+                document.getElementById('wait-screen').classList.remove('hidden');
+                document.getElementById('wait-text').innerText = "ВРЕМЯ ВЫШЛО!";
+            }
+        }
     }, 1000);
 }
 
 function renderFinalScores() {
     db.ref('teamScores').once('value', snap => {
-        const s = snap.val() || {};
-        const board = document.getElementById('leaderboard-data');
-        board.innerHTML = "";
+        const s = snap.val() || {}; const board = document.getElementById('leaderboard-data'); board.innerHTML = "";
         const teams = ["Команда 1", "Команда 2", "Команда 3", "Команда 4"];
         teams.sort((a, b) => (s[b] || 0) - (s[a] || 0));
         teams.forEach((t, index) => {
@@ -229,14 +445,6 @@ function renderFinalScores() {
         });
     });
 }
-
-db.ref('roundAnswers').on('value', snap => {
-    let log = document.getElementById('admin-log'); log.innerHTML = "<b>LOG:</b><br>";
-    if(snap.val()) Object.values(snap.val()).forEach(a => {
-        log.innerHTML += `${a.correct ? "✅" : "❌"} ${a.team} (+${a.points || 0})<br>`;
-    });
-});
 </script>
 </body>
 </html>
-
